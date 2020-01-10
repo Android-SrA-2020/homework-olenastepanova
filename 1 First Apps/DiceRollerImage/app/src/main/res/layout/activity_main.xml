@@ -29,10 +29,17 @@
         android:contentDescription="TODO" />
 
     <Button
-        android:id="@+id/roll_button"
+    android:id="@+id/roll_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/roll_label"
+    android:layout_gravity="center_horizontal"
+    />
+    <Button
+        android:id="@+id/clear_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/roll_label"
+        android:text="@string/clear_label"
         android:layout_gravity="center_horizontal"
         />
 

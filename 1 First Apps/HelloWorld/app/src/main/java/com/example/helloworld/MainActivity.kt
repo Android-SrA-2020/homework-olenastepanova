@@ -9,4 +9,18 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
     }
+
+    /*
+    Questions
+        What is the name of the layout file for the main activity?
+            activity_main.xml
+
+        What is the name of the string resource that specifies the app's name?
+            app_name
+
+        Which tool do you use to create a new emulator?
+            AVD Manager
+
+
+     */
 }

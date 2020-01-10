@@ -20,8 +20,10 @@ class MainActivity : AppCompatActivity() {
         diceImage2 = findViewById(R.id.dice_image2)
 
         val rollButton: Button = findViewById(R.id.roll_button)
+        val clearButton: Button = findViewById(R.id.clear_button)
 
         rollButton.setOnClickListener { rollDice() }
+        clearButton.setOnClickListener { clear() }
 
     }
 
@@ -31,7 +33,12 @@ class MainActivity : AppCompatActivity() {
         diceImage2.setImageResource(getRandomDiceImage())
     }
 
-    private fun getRandomDiceImage() : Int {
+    private fun clear() {
+        diceImage.setImageResource(R.drawable.empty_dice)
+        diceImage2.setImageResource(R.drawable.empty_dice)
+    }
+
+    private fun getRandomDiceImage(): Int {
 
         val random = Random.nextInt(6) + 1
 
@@ -44,5 +51,27 @@ class MainActivity : AppCompatActivity() {
             else -> R.drawable.dice_6
         }
     }
+
+
+    /*
+    Questions
+    Which method changes the image resource for an ImageView in Kotlin code? xmx
+	* setImageResource()
+
+    Which <ImageView> attribute indicates a source image that should be used only in Android Studio?
+	* tools:src
+
+    What does the lateinit keyword in a variable declaration indicate in Kotlin code?
+	*  The variable will be initialized later. I promise!
+
+
+    Which Gradle configuration indicates the most recent API level your app has been tested with?
+	* compileSdkVersion
+
+    You see an import line in your code that starts with androidx. What does this mean?
+	* The class is part of the Android Jetpack libraries.
+
+
+     */
 
 }
