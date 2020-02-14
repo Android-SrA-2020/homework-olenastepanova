@@ -18,6 +18,7 @@ package com.example.android.dessertclicker
 
 import android.content.ActivityNotFoundException
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -28,10 +29,18 @@ import androidx.databinding.DataBindingUtil
 import com.example.android.dessertclicker.databinding.ActivityMainBinding
 import timber.log.Timber
 
+
+//data to save
+const val KEY_REVENUE = "revenue_key"
+const val KEY_DESSERT_SOLD = "dessert_sold_key"
+const val KEY_TIMER_SECONDS = "timer_seconds_key"
+
+
 class MainActivity : AppCompatActivity() {
 
     private var revenue = 0
     private var dessertsSold = 0
+
 
     // Contains all the views
     private lateinit var binding: ActivityMainBinding
@@ -62,12 +71,16 @@ class MainActivity : AppCompatActivity() {
             Dessert(R.drawable.oreo, 6000, 20000)
     )
     private var currentDessert = allDesserts[0]
+    private lateinit var timer: DessertTimer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         //adding log message
         //Log.i("MainActivity", "onCreate called")
+
+
+
         Timber.i("onCreate called")
 
 
@@ -78,17 +91,48 @@ class MainActivity : AppCompatActivity() {
             onDessertClicked()
         }
 
+        //create desert timer obj
+        timer = DessertTimer(this.lifecycle)
         // Set the TextViews to the right values
         binding.revenue = revenue
         binding.amountSold = dessertsSold
+
+        //get data from saved bundle
+        if (savedInstanceState != null) {
+            revenue = savedInstanceState.getInt(KEY_REVENUE, 0)
+            dessertsSold = savedInstanceState.getInt(KEY_DESSERT_SOLD, 0)
+            timer.secondsCount =
+                    savedInstanceState.getInt(KEY_TIMER_SECONDS, 0)
+            showCurrentDessert()
+        }
+
+
+
+
 
         // Make sure the correct dessert is showing
         binding.dessertButton.setImageResource(currentDessert.imageId)
     }
 
+
+    //save the data. is called after onPause() and onStop()
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+
+        outState!!.putInt(KEY_REVENUE, revenue);
+        outState.putInt(KEY_DESSERT_SOLD, dessertsSold);
+        outState.putInt(KEY_TIMER_SECONDS, timer.secondsCount)
+
+        Timber.i("OnSaveInstanceState called");
+    }
+
+
     override fun onStart() {
         super.onStart()
-        Timber.i("onStart called")
+
+        //start timer just before the ACtivity becomes visible
+//        timer.startTimer()
+//       Timber.i("onStart called")
     }
     override fun onResume() {
         super.onResume()
@@ -102,6 +146,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
+
+        //stop timer
+
         Timber.i("onStop Called")
     }
 
