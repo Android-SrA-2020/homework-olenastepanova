@@ -25,9 +25,8 @@ import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.NavHostFragment.findNavController
 import com.example.android.guesstheword.R
 import com.example.android.guesstheword.databinding.GameFragmentBinding
 
@@ -36,11 +35,9 @@ import com.example.android.guesstheword.databinding.GameFragmentBinding
  */
 class GameFragment : Fragment() {
 
-    //reference to ViewModel
-    private lateinit var viewModel: GameViewModel
-
-
     private lateinit var binding: GameFragmentBinding
+
+    private lateinit var viewModel: GameViewModel
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -52,64 +49,37 @@ class GameFragment : Fragment() {
                 container,
                 false
         )
+        //Log.i("GameFragment", "Called ViewModelProviders.of")
 
-        //init of viewModel
-        Log.i("GameFragment", "Called ViewModelProviders.of")
         viewModel = ViewModelProviders.of(this).get(GameViewModel::class.java)
 
+        // Set the viewModel for data binding - this allows the bound layout access
+        // to all the data in the VieWModel
+        binding.gameViewModel = viewModel
 
-        //attach observer for score and dynamically update score text label in UI
-        viewModel.score.observe(viewLifecycleOwner, Observer { newScore ->
-            binding.scoreText.text = newScore.toString()
+        // Specify the current activity as the lifecycle owner of the binding.
+        // This is used so that the binding can observe LiveData updates
+        binding.lifecycleOwner = this
+
+
+        // Observer for the Game finished event
+        viewModel.eventGameFinish.observe(this, Observer<Boolean> { hasFinished ->
+            if (hasFinished) gameFinished()
         })
 
-        //observer for text
-        viewModel.word.observe(viewLifecycleOwner, Observer { newWord ->
-            binding.wordText.text = newWord.toString()
-        })
-
-        //observer for game finish
-        viewModel.eventGameFinish.observe(viewLifecycleOwner, Observer { hasFinished ->
-            if(hasFinished) gameFinished()
-        })
-
-
-
-        binding.correctButton.setOnClickListener { onCorrect() }
-        binding.skipButton.setOnClickListener { onSkip() }
-        binding.endGameButton.setOnClickListener { onEndGame() }
+        //ALL button clicker events are in xml!!!
 
         return binding.root
-
     }
 
-
-    /** Methods for buttons presses **/
-
-    private fun onSkip() {
-        viewModel.onSkip()
-
-    }
-
-    private fun onCorrect() {
-        viewModel.onCorrect()
-
-    }
-
-
-    //Game end
-    private fun onEndGame() {
-        gameFinished()
-    }
-
+    /**
+     * When the game is finished
+     */
     private fun gameFinished() {
         Toast.makeText(activity, "Game has just finished", Toast.LENGTH_SHORT).show()
-
         val action = GameFragmentDirections.actionGameToScore()
-        action.score = viewModel.score.value ?: 0
-        NavHostFragment.findNavController(this).navigate(action)
-
-        //to prevent triggering gameFinished when fragment viewModel is re-created
+        action.score = viewModel.score.value?:0
+        findNavController(this).navigate(action)
         viewModel.onGameFinishComplete()
     }
 }

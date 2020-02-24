@@ -25,7 +25,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import com.example.android.guesstheword.R
 import com.example.android.guesstheword.databinding.ScoreFragmentBinding
 
@@ -51,25 +50,17 @@ class ScoreFragment : Fragment() {
                 false
         )
 
-        //view model Factory with argument
-        viewModelFactory = ScoreViewModelFactory(ScoreFragmentArgs
-                .fromBundle(arguments!!).score)
-
-        //view model
+        viewModelFactory = ScoreViewModelFactory(ScoreFragmentArgs.fromBundle(arguments!!).score)
         viewModel = ViewModelProviders.of(this, viewModelFactory)
                 .get(ScoreViewModel::class.java)
+        binding.scoreViewModel = viewModel
 
+        // Specify the current activity as the lifecycle owner of the binding.
+        // This is used so that the binding can observe LiveData updates
+        binding.lifecycleOwner = this
 
-        //add observer for score
-        viewModel.score.observe(viewLifecycleOwner, Observer { newScore ->
-            binding.scoreText.text = newScore.toString()
-        })
-
-        //click listener for Play again
-        binding.playAgainButton.setOnClickListener { viewModel.onPlayAgain() }
-
-        //navigate back to game when Play Again is pressed
-        viewModel.eventPlayAgain.observe(viewLifecycleOwner, Observer { playAgain ->
+        // Navigates back to game when button is pressed
+        viewModel.eventPlayAgain.observe(this, Observer { playAgain ->
             if (playAgain) {
                 findNavController().navigate(ScoreFragmentDirections.actionRestart())
                 viewModel.onPlayAgainComplete()
