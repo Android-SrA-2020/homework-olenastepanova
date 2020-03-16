@@ -18,6 +18,7 @@ package com.example.android.trackmysleepquality.sleeptracker
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
@@ -52,6 +53,36 @@ class SleepTrackerViewModel(
     //hold current night record from DB
     private var tonight = MutableLiveData<SleepNight?>()
 
+
+    //navigate to sleep quality
+    private val _navigateToSleepQuality = MutableLiveData<SleepNight>()
+    val navigateToSleepQuality: LiveData<SleepNight>
+    get() = _navigateToSleepQuality
+
+    fun doneNavigating(){
+        _navigateToSleepQuality.value = null
+    }
+
+    val startButtonVisible = Transformations.map(tonight){
+        it == null
+    }
+
+    val stopButtonVisible = Transformations.map(tonight){
+        it != null
+    }
+
+    val clearButtonVisible = Transformations.map(nights){
+        it?.isNotEmpty()
+    }
+
+    //show Snackbar
+    private var _showSnackBarEvent = MutableLiveData<Boolean>()
+    val showSnackBarEvent: LiveData<Boolean>
+    get() = _showSnackBarEvent
+
+    fun doneShowingSnackbar(){
+        _showSnackBarEvent.value = false
+    }
 
     init {
         initializeTonight()
@@ -106,6 +137,10 @@ class SleepTrackerViewModel(
             val oldNight = tonight.value ?: return@launch
             oldNight.endTimeMilli = System.currentTimeMillis()
             update(oldNight)
+
+            //trigger navigation -> when prop has a value navigation is triggered and
+            //value is passed
+            _navigateToSleepQuality.value = oldNight
         }
     }
 
@@ -120,6 +155,7 @@ class SleepTrackerViewModel(
         uiScope.launch {
             clear()
             tonight.value = null
+            _showSnackBarEvent.value = true
         }
     }
 
