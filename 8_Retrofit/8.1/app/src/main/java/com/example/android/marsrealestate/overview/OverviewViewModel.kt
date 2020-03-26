@@ -34,14 +34,21 @@ import javax.security.auth.callback.Callback
 /**
  * The [ViewModel] that is attached to the [OverviewFragment].
  */
+enum class MarsApiStatus { LOADING, ERROR, DONE }
+
 class OverviewViewModel : ViewModel() {
 
-    // The internal MutableLiveData String that stores the most recent response
-    private val _response = MutableLiveData<String>()
+    //keep track of the current status,
+    private val _status = MutableLiveData<MarsApiStatus>()
 
-    // The external immutable LiveData for the response String
-    val response: LiveData<String>
-        get() = _response
+    val status: LiveData<MarsApiStatus>
+        get() = _status
+
+    //for list of MArsProperty obj
+    private val _properties = MutableLiveData<List<MarsProperty>>()
+
+    val properties: LiveData<List<MarsProperty>>
+        get() = _properties
 
     //coroutine
     private var viewModelJob = Job()
@@ -66,13 +73,17 @@ class OverviewViewModel : ViewModel() {
             var getPropertiesDeferred = MarsApi.retrofitService.getProperties()
 
             try {
-
-                //await of deferred list
+                //awaits deferred list
                 var listResult = getPropertiesDeferred.await()
-                _response.value =
-                        "Success: ${listResult.size} Mars properties retrieved"
+                _status.value = MarsApiStatus.LOADING
+                if (listResult.isNotEmpty()) {
+                    _properties.value = listResult
+                    _status.value = MarsApiStatus.DONE
+                }
             } catch (e: Exception) {
-                _response.value = "Failure: ${e.message}"
+                _status.value = MarsApiStatus.ERROR
+                //set to empty
+                _properties.value = ArrayList()
             }
         }
     }
