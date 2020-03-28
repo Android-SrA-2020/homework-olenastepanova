@@ -30,6 +30,8 @@ import retrofit2.Call
 import retrofit2.Response
 import javax.security.auth.callback.Callback
 
+import com.example.android.marsrealestate.network.MarsApiFilter
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * The [ViewModel] that is attached to the [OverviewFragment].
@@ -56,21 +58,29 @@ class OverviewViewModel : ViewModel() {
     //coroutine scope
     private val coroutineScope = CoroutineScope(
             viewModelJob + Dispatchers.Main )
+
+    //navigate to Details page
+    private val _navigateToSelectedProperty = MutableLiveData<MarsProperty>()
+    val navigateToSelectedProperty: LiveData<MarsProperty>
+        get() = _navigateToSelectedProperty
+
     /**
      * Call getMarsRealEstateProperties() on init so we can display status immediately.
      */
     init {
-        getMarsRealEstateProperties()
+        //get all properties on init
+        getMarsRealEstateProperties(MarsApiFilter.SHOW_ALL)
     }
 
     /**
      * Sets the value of the status LiveData to the Mars API status.
      */
-    private fun getMarsRealEstateProperties() {
+    private fun getMarsRealEstateProperties(filter: MarsApiFilter) {
         coroutineScope.launch {
 
             //props of retrofit service
-            var getPropertiesDeferred = MarsApi.retrofitService.getProperties()
+            var getPropertiesDeferred = MarsApi.retrofitService
+                    .getProperties(filter.value)
 
             try {
                 //awaits deferred list
@@ -86,6 +96,19 @@ class OverviewViewModel : ViewModel() {
                 _properties.value = ArrayList()
             }
         }
+    }
+
+    fun updateFilter(filter: MarsApiFilter){
+        getMarsRealEstateProperties(filter)
+    }
+
+    fun displayPropertyDetails(marsProperty: MarsProperty) {
+        _navigateToSelectedProperty.value = marsProperty
+    }
+
+    //nav complted
+    fun displayPropertyDetailsComplete() {
+        _navigateToSelectedProperty.value = null
     }
 
     //stop loading data when VM is destroyed

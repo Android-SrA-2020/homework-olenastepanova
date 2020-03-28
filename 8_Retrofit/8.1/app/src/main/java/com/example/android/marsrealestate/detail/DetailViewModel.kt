@@ -17,8 +17,8 @@
 package com.example.android.marsrealestate.detail
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.*
+import com.example.android.marsrealestate.R
 import com.example.android.marsrealestate.detail.DetailFragment
 import com.example.android.marsrealestate.network.MarsProperty
 
@@ -26,4 +26,36 @@ import com.example.android.marsrealestate.network.MarsProperty
  * The [ViewModel] that is associated with the [DetailFragment].
  */
 class DetailViewModel(@Suppress("UNUSED_PARAMETER")marsProperty: MarsProperty, app: Application) : AndroidViewModel(app) {
+
+    //for selected property navigation
+    private val _selectedProperty = MutableLiveData<MarsProperty>()
+    val selectedProperty: LiveData<MarsProperty>
+    get() = _selectedProperty
+
+    init{
+        _selectedProperty.value = marsProperty
+    }
+    //whether the selected property is a rental,
+    // using the same test from the first task. If
+    // the property is a rental, the transformation
+    // chooses the appropriate string from the resources
+    val displayPropertyPrice = Transformations.map(selectedProperty) {
+        app.applicationContext.getString(
+                when (it.isRental) {
+                    true -> R.string.display_price_monthly_rental
+                    false -> R.string.display_price
+                }, it.price)
+    }
+
+    //concatenates multiple string resources, based on whether the
+    // property type is a rental.
+    val displayPropertyType = Transformations.map(selectedProperty) {
+        app.applicationContext.getString(R.string.display_type,
+                app.applicationContext.getString(
+                        when (it.isRental) {
+                            true -> R.string.type_rent
+                            false -> R.string.type_sale
+                        }))
+    }
+
 }
